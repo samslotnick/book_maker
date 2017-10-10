@@ -2,17 +2,16 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
-import configparser
 import os
-
-config = configparser.ConfigParser()
-config.read("config.ini")
-username = config['UN']['user_name']
-password = config['PW']['password']
-#book_url = input("Please enter url: ")
-#print("Please enter log in credentials: ")
-#username = input("Username(Library Card Number): ")
-#password = input("PIN(last four digits of phone number): " )
+#import configparser
+#config = configparser.ConfigParser()
+#config.read("config.ini")
+#username = config['UN']['user_name']
+#password = config['PW']['password']
+book_url = input("Please enter url: ")
+print("Please enter log in credentials: ")
+username = input("Username(Library Card Number): ")
+password = input("PIN(last four digits of phone number): " )
 chromeOptions = webdriver.ChromeOptions()
 driver = webdriver.Chrome("./driver/chromedriver",chrome_options=chromeOptions)
 driver.get("http://proquestcombo.safaribooksonline.com.ezproxy.torontopubliclibrary.ca/book/programming/python/9781449357009/firstchapter")
