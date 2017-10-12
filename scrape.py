@@ -3,18 +3,22 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 import os
-#import configparser
-#config = configparser.ConfigParser()
-#config.read("config.ini")
-#username = config['UN']['user_name']
-#password = config['PW']['password']
-book_url = input("Please enter url: ")
-print("Please enter log in credentials: ")
-username = input("Username(Library Card Number): ")
-password = input("PIN(last four digits of phone number): " )
+import configparser
+config = configparser.ConfigParser()
+config.read("config.ini")
+username = config['UN']['user_name']
+password = config['PW']['password']        
+#book_url = input("Please enter url: ")
+#print("Please enter log in credentials: ")
+#username = input("Username(Library Card Number): ")
+#password = input("PIN(last four digits of phone number): " )
+
 chromeOptions = webdriver.ChromeOptions()
+#chromeOptions.add_argument('--headless')
 driver = webdriver.Chrome("./driver/chromedriver",chrome_options=chromeOptions)
-driver.get("http://proquestcombo.safaribooksonline.com.ezproxy.torontopubliclibrary.ca/book/programming/python/9781449357009/firstchapter")
+#driver.get("http://proquestcombo.safaribooksonline.com.ezproxy.torontopubliclibrary.ca/book/programming/python/9781449357009/firstchapter")
+driver.get("http://proquestcombo.safaribooksonline.com.ezproxy.torontopubliclibrary.ca/book/programming/python/9781457189906/firstchapter")
+#driver.get(book_url)
 un = driver.find_element_by_name("user")
 login_page = driver.current_url
 un.send_keys(username)
@@ -23,12 +27,25 @@ pw.send_keys(password, Keys.RETURN)
 session = driver.session_id
 page = 1
 title = driver.find_element_by_class_name("meta_title").text
+#==============================================================================
+# Removing illegal attr/chars for OSX directory names
+#==============================================================================
+file_name = title.replace(":","-")
+if len(file_name) > 255:
+    file_name = file_name[0:255]
+if not os.path.exists(os.path.expanduser("~/Desktop/Scraped_Books")):
+    os.mkdir(os.path.expanduser("~/Desktop/Scraped_Books"))
+if not os.path.exists(os.path.expanduser("~/Desktop/Scraped_Books/%s" % (file_name))):
+    os.mkdir(os.path.expanduser("~/Desktop/Scraped_Books/%s" % (file_name)))
+#if not os.path.exists("./%s" % (file_name)):
+#    os.makedirs("./%s" % (file_name))
 def lastPage(driver):
     try:
         driver.get_element_by_class_name("navigationDisabled")
     except:
         return False
-def firstPage(driver, page):
+    
+def firstPage(driver, page, file_name):
     WebDriverWait(driver, 10).until(lambda p: p.find_element_by_id('print'))
     driver.find_element_by_id("print").click()
     WebDriverWait(driver, 10).until(lambda d: len(d.window_handles) == 3)
@@ -46,14 +63,14 @@ def firstPage(driver, page):
         set index of window 1 to 1
         delay 2
         tell application "System Events" 
-        keystroke "~/coding/book_scraper/pages"
+        keystroke "~/Desktop/Scraped_Books/%s"
         key code 76
         delay 1
         keystroke "%d"
         delay 1.5
         key code 76
         end tell
-    end tell'""" % (page)
+    end tell'""" % (file_name, page)
     return (os.system(cmd), page)
 
 def getPages(driver, page):
@@ -69,7 +86,7 @@ def getPages(driver, page):
     driver.find_element_by_class_name("print").click()
     return page
 
-firstPage(driver, page)
+firstPage(driver, page, file_name)
 page += 1
 driver.switch_to_window(driver.window_handles[1])
 driver.close()
@@ -98,7 +115,7 @@ while lastPage(driver) != True:
         print("Pages gathered")
         driver.close()
     
-command = """osascript -e 'do shell script "open ~/coding/book_scraper/pages/"
+command = """osascript -e 'do shell script "open ~/coding/book_scraper/%s/"
 delay 1
 tell application "System Events"
 	key code 0 using command down
@@ -110,5 +127,5 @@ tell application "System Events"
 	key code 124
 	key code 76
 end tell
-'"""
+'""" % (file_name)
 os.system(command)
