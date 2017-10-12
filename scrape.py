@@ -3,21 +3,19 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 import os
-import configparser
-config = configparser.ConfigParser()
-config.read("config.ini")
-username = config['UN']['user_name']
-password = config['PW']['password']        
-#book_url = input("Please enter url: ")
-#print("Please enter log in credentials: ")
-#username = input("Username(Library Card Number): ")
-#password = input("PIN(last four digits of phone number): " )
+#import configparser
+#config = configparser.ConfigParser()
+#config.read("config.ini")
+#username = config['UN']['user_name']
+#password = config['PW']['password']        
+book_url = input("Please enter url: ")
+print("Please enter log in credentials: ")
+username = input("Username(Library Card Number): ")
+password = input("PIN(last four digits of phone number): " )
 
 chromeOptions = webdriver.ChromeOptions()
 #chromeOptions.add_argument('--headless')
 driver = webdriver.Chrome("./driver/chromedriver",chrome_options=chromeOptions)
-#driver.get("http://proquestcombo.safaribooksonline.com.ezproxy.torontopubliclibrary.ca/book/programming/python/9781449357009/firstchapter")
-driver.get("http://proquestcombo.safaribooksonline.com.ezproxy.torontopubliclibrary.ca/book/programming/python/9781457189906/firstchapter")
 #driver.get(book_url)
 un = driver.find_element_by_name("user")
 login_page = driver.current_url
@@ -37,8 +35,7 @@ if not os.path.exists(os.path.expanduser("~/Desktop/Scraped_Books")):
     os.mkdir(os.path.expanduser("~/Desktop/Scraped_Books"))
 if not os.path.exists(os.path.expanduser("~/Desktop/Scraped_Books/%s" % (file_name))):
     os.mkdir(os.path.expanduser("~/Desktop/Scraped_Books/%s" % (file_name)))
-#if not os.path.exists("./%s" % (file_name)):
-#    os.makedirs("./%s" % (file_name))
+    
 def lastPage(driver):
     try:
         driver.get_element_by_class_name("navigationDisabled")
@@ -110,10 +107,11 @@ while lastPage(driver) != True:
     driver.close()
     driver.switch_to_window(driver.window_handles[0])
     try:
+        WebDriverWait(driver, 10).until(lambda s: s.find_element_by_id('next'))
         driver.find_element_by_id("next").click()
     except:
         print("Pages gathered")
-        driver.close()
+    driver.close()
     
 command = """osascript -e 'do shell script "open ~/coding/book_scraper/%s/"
 delay 1
