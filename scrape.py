@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
 import os
 #import configparser
 #config = configparser.ConfigParser()
@@ -12,11 +13,12 @@ book_url = input("Please enter url: ")
 print("Please enter log in credentials: ")
 username = input("Username(Library Card Number): ")
 password = input("PIN(last four digits of phone number): " )
-
-chromeOptions = webdriver.ChromeOptions()
-#chromeOptions.add_argument('--headless')
+#book_url = "http://proquestcombo.safaribooksonline.com.ezproxy.torontopubliclibrary.ca/book/programming/applescript/9780470525869/the-fundamentals-of-automation/the_fundamentals_of_automation#X2ludGVybmFsX0J2ZGVwRmxhc2hSZWFkZXI/eG1saWQ9OTc4MDQ3MDUyNTg2OS9pdg=="
+chromeOptions = Options()
+chromeOptions.add_argument('--print-to-pdf')
 driver = webdriver.Chrome("./driver/chromedriver",chrome_options=chromeOptions)
-#driver.get(book_url)
+driver.get(book_url)
+#WebDriverWait(driver, 10).until(lambda u: u.find_element_by_name('user'))
 un = driver.find_element_by_name("user")
 login_page = driver.current_url
 un.send_keys(username)
@@ -71,16 +73,19 @@ def firstPage(driver, page, file_name):
     return (os.system(cmd), page)
 
 def getPages(driver, page):
-    WebDriverWait(driver, 10).until(lambda p: p.find_element_by_id('print'))
-    pr = driver.find_element_by_id("print").click()
-    print_window = driver.window_handles[1]
-    book_window = driver.window_handles[0]
-    driver.switch_to_window(print_window)
-    WebDriverWait(driver, 10).until(lambda d: len(d.window_handles) == 3)
-    dial_window = driver.window_handles[2]
-    driver.switch_to_window(dial_window)
-    WebDriverWait(driver, 10).until(lambda s: s.find_element_by_class_name('print'))
-    driver.find_element_by_class_name("print").click()
+    try:
+        WebDriverWait(driver, 10).until(lambda p: p.find_element_by_id('print'))
+        pr = driver.find_element_by_id("print").click()
+        print_window = driver.window_handles[1]
+        book_window = driver.window_handles[0]
+        driver.switch_to_window(print_window)
+        WebDriverWait(driver, 10).until(lambda d: len(d.window_handles) == 3)
+        dial_window = driver.window_handles[2]
+        driver.switch_to_window(dial_window)
+        WebDriverWait(driver, 10).until(lambda s: s.find_element_by_class_name('print'))
+        driver.find_element_by_class_name("print").click()
+    except Exception:
+        pass
     return page
 
 firstPage(driver, page, file_name)
@@ -111,7 +116,7 @@ while lastPage(driver) != True:
         driver.find_element_by_id("next").click()
     except:
         print("Pages gathered")
-    driver.close()
+driver.close()
     
 command = """osascript -e 'do shell script "open ~/coding/book_scraper/%s/"
 delay 1
